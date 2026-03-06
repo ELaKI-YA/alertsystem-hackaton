@@ -1,101 +1,47 @@
-import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:geolocator/geolocator.dart';
 
-void main() {
-  runApp(TrackifyApp());
-}
+void main() => runApp(const TrackifyApp());
 
 class TrackifyApp extends StatelessWidget {
+  const TrackifyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Trackify', // Updated Name
       debugShowCheckedModeBanner: false,
-      title: "Trackify",
-      theme: ThemeData.dark(),
-      home: SplashScreen(),
-    );
-  }
-}
-
-String language = "en";
-String gender = "";
-
-String name = "";
-String dob = "";
-String blood = "";
-String email = "";
-String phone = "";
-
-File? photo;
-
-List<String> alertNumbers = ["100","1515"]
-
-String tr(String en, String ta) {
-  return language == "ta" ? ta : en;
-}
-
-////////////////////////////////////////////////////////////
-/// SPLASH SCREEN
-////////////////////////////////////////////////////////////
-
-class SplashScreen extends StatefulWidget {
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  String text = "";
-  String word = "TRACKIFY";
-  int index = 0;
-
-  @override
-  void initState() {
-    super.initState();
-
-    Timer.periodic(Duration(milliseconds: 200), (timer) {
-      if (index < word.length) {
-        setState(() {
-          text += word[index];
-          index++;
-        });
-      } else {
-        timer.cancel();
-        Future.delayed(Duration(seconds: 1), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => LanguageScreen()),
-          );
-        });
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-        ),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0f172a),
       ),
+      home: const LoginScreen(),
     );
   }
 }
 
-////////////////////////////////////////////////////////////
-/// LANGUAGE SCREEN
-////////////////////////////////////////////////////////////
+// 1. LOGIN SCREEN
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-class LanguageScreen extends StatelessWidget {
-  void selectLanguage(BuildContext context, String lang) {
-    language = lang;
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _plateController = TextEditingController();
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => TermsScreen()));
+  void _login() {
+    if (_plateController.text.length >= 4) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Dashboard()),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Enter valid Bus Plate")));
+    }
   }
 
   @override
@@ -105,19 +51,23 @@ class LanguageScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              tr("Select Language", "மொழியை தேர்வு செய்யவும்"),
-              style: TextStyle(fontSize: 22),
+            const Text(
+              "TRACKIFY Login",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => selectLanguage(context, "en"),
-              child: Text("English"),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: TextField(
+                controller: _plateController,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: "Bus Plate Number",
+                ),
+                style: const TextStyle(color: Colors.black),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () => selectLanguage(context, "ta"),
-              child: Text("தமிழ்"),
-            ),
+            ElevatedButton(onPressed: _login, child: const Text("Start Shift")),
           ],
         ),
       ),
@@ -125,325 +75,81 @@ class LanguageScreen extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// TERMS SCREEN
-////////////////////////////////////////////////////////////
+// 2. DASHBOARD
+class Dashboard extends StatelessWidget {
+  const Dashboard({super.key});
 
-class TermsScreen extends StatefulWidget {
-  @override
-  State<TermsScreen> createState() => _TermsScreenState();
-}
-
-class _TermsScreenState extends State<TermsScreen> {
-  bool accepted = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(tr("Terms & Conditions", "விதிமுறைகள்"))),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white),
-              ),
-              child: Text(
-                tr(
-                  "Use Sentinel only during real emergencies.\n\nEnable location services while sending alerts.\n\nFollow driver instructions during emergencies.\n\nDo not misuse the emergency alert system.\n\nDo not damage safety monitoring devices.",
-                  "Sentinel அம்சத்தை அவசரநிலையில் மட்டும் பயன்படுத்தவும்.\n\nஅவசர அறிவிப்பை அனுப்பும்போது இடம் இயக்கப்பட்டிருக்க வேண்டும்.\n\nஅவசரநிலையில் டிரைவரின் வழிமுறைகளை பின்பற்றவும்.\n\nஅவசர எச்சரிக்கை அமைப்பை தவறாக பயன்படுத்த வேண்டாம்.\n\nபாதுகாப்பு சாதனங்களை சேதப்படுத்த வேண்டாம்.",
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                Checkbox(
-                  value: accepted,
-                  onChanged: (v) {
-                    setState(() {
-                      accepted = v!;
-                    });
-                  },
-                ),
-                Text(tr("Accept Terms", "விதிமுறைகளை ஏற்கிறேன்")),
-              ],
-            ),
-            ElevatedButton(
-              onPressed: accepted
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => GenderScreen()),
-                      );
-                    }
-                  : null,
-              child: Text(tr("Continue", "தொடரவும்")),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// GENDER
-////////////////////////////////////////////////////////////
-
-class GenderScreen extends StatelessWidget {
-  void select(BuildContext context, String g) {
-    gender = g;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => RegisterScreen()),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(tr("Select Gender", "பாலினத்தை தேர்வு செய்யவும்")),
-      ),
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          GestureDetector(
-            onTap: () => select(context, "Male"),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icon(Icons.man, size: 100), Text(tr("Male", "ஆண்"))],
-            ),
-          ),
-          GestureDetector(
-            onTap: () => select(context, "Female"),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.woman, size: 100),
-                Text(tr("Female", "பெண்")),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// REGISTER SCREEN
-////////////////////////////////////////////////////////////
-
-class RegisterScreen extends StatefulWidget {
-  @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
-}
-
-class _RegisterScreenState extends State<RegisterScreen> {
-  final nameController = TextEditingController();
-  final dobController = TextEditingController();
-  final bloodController = TextEditingController();
-  final emailController = TextEditingController();
-  final phoneController = TextEditingController();
-
-  Future pickDOB() async {
-    DateTime? date = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-    );
-
-    if (date != null) {
-      dobController.text = "${date.day}/${date.month}/${date.year}";
+  Future<void> _makeAdminCall() async {
+    final Uri url = Uri(scheme: 'tel', path: '9976787741');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     }
   }
 
-  Future pickImage() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
-
-    if (img != null) {
-      setState(() {
-        photo = File(img.path);
-      });
-    }
-  }
-
-  void submit() {
-    name = nameController.text;
-    dob = dobController.text;
-    blood = bloodController.text;
-    email = emailController.text;
-    phone = phoneController.text;
-
-    Navigator.push(context, MaterialPageRoute(builder: (_) => HomeScreen()));
-  }
-
-  Widget field(String label, TextEditingController c) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10),
-      child: TextField(
-        controller: c,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr("Passenger Registration", "பயணி பதிவு"))),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            field(tr("Name", "பெயர்"), nameController),
-            TextField(
-              controller: dobController,
-              readOnly: true,
-              onTap: pickDOB,
-              decoration: InputDecoration(
-                labelText: tr("DOB", "பிறந்த தேதி"),
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.calendar_today),
-              ),
-            ),
-            SizedBox(height: 10),
-            field(tr("Blood Group", "ரத்த வகை"), bloodController),
-            field(tr("Email", "மின்னஞ்சல்"), emailController),
-            field(tr("Phone", "தொலைபேசி"), phoneController),
-            ElevatedButton(
-              onPressed: pickImage,
-              child: Text(tr("Upload Photo", "புகைப்படம் பதிவேற்றம்")),
-            ),
-            SizedBox(height: 10),
-            photo != null
-                ? Image.file(photo!, height: 120)
-                : Text(
-                    tr(
-                      "No Photo Selected",
-                      "புகைப்படம் தேர்வு செய்யப்படவில்லை",
-                    ),
-                  ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: submit,
-              child: Text(tr("Submit", "சமர்ப்பிக்கவும்")),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// HOME SCREEN
-////////////////////////////////////////////////////////////
-
-class HomeScreen extends StatelessWidget {
-  void openSentinel(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => SentinelScreen()),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Trackify")),
+      appBar: AppBar(title: const Text("Trackify Safety Monitor")),
       body: Column(
         children: [
-          Expanded(
-            child: ListView(
+          // FIXED MAP WIDGET
+          SizedBox(
+            height: 250,
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: LatLng(11.0168, 76.9558),
+                initialZoom: 13,
+              ),
               children: [
-                route("1", "Maruthamalai", "Avarampalayam"),
-                route("1A", "Ondipudur", "Vadavalli"),
-                route("3", "Ganapathy", "Madukkarai"),
-                route("10", "Saibaba Colony", "Chinniampalayam"),
-                route("70", "Gandhipuram", "Maruthamalai"),
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName:
+                      'com.example.trackify', // Required in newer versions
+                ),
               ],
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding: EdgeInsets.all(20),
-            ),
-            onPressed: () => openSentinel(context),
-            child: Text(tr("⚠ SENTINEL", "⚠ அவசர எச்சரிக்கை")),
+
+          const Padding(
+            padding: EdgeInsets.all(10),
+            child: Text("Bus Status", style: TextStyle(fontSize: 18)),
           ),
+
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(10),
+              children: [
+                _buildSensorCard("Engine Temp", "Normal", Colors.green),
+                _buildSensorCard("Oil Pressure", "Stable", Colors.green),
+                _buildSensorCard("Brake Pressure", "Normal", Colors.green),
+                _buildSensorCard("Tyre Condition", "Good", Colors.green),
+                _buildSensorCard("Fuel Leak", "None", Colors.green),
+                _buildSensorCard("Crash Status", "No Impact", Colors.green),
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _makeAdminCall,
+        backgroundColor: Colors.blue,
+        label: const Text("Call Admin"),
+        icon: const Icon(Icons.phone),
+      ),
+    );
+  }
+
+  Widget _buildSensorCard(String title, String status, Color color) {
+    return Card(
+      color: color.withOpacity(0.2),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(title),
+          Text(status, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
-
-  Widget route(String bus, String from, String to) {
-    return Card(
-      child: ListTile(title: Text("Bus $bus"), subtitle: Text("$from ➜ $to")),
-    );
-  }
 }
-
-////////////////////////////////////////////////////////////
-/// SENTINEL SCREEN
-////////////////////////////////////////////////////////////
-
-class SentinelScreen extends StatelessWidget {
-  Future sendEmergency(String type) async {
-    LocationPermission permission = await Geolocator.requestPermission();
-
-    Position pos = await Geolocator.getCurrentPosition();
-
-    String location =
-        "https://maps.google.com/?q=${pos.latitude},${pos.longitude}";
-
-    String message =
-        "TRACKIFY ALERT\nEmergency:$type\nName:$name\nPhone:$phone\nLocation:$location";
-
-    for (String number in alertNumbers) {
-      String sms = "sms:$number?body=${Uri.encodeComponent(message)}";
-      await launchUrl(Uri.parse(sms));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<String> options = gender == "Female"
-        ? [
-            tr("Kidnap", "கடத்தல்"),
-            tr("Harassment", "துன்புறுத்தல்"),
-            tr("Stalking", "பின்தொடர்வு"),
-          ]
-        : [
-            tr("Robbery", "கொள்ளை"),
-            tr("Assault", "தாக்குதல்"),
-            tr("Medical Emergency", "மருத்துவ அவசரம்"),
-          ];
-
-    return Scaffold(
-      appBar: AppBar(title: Text(tr("Emergency Options", "அவசர தேர்வுகள்"))),
-      body: ListView.builder(
-        itemCount: options.length,
-        itemBuilder: (_, i) {
-          return ListTile(
-            leading: Icon(Icons.warning, color: Colors.red),
-            title: Text(options[i]),
-            onTap: () {
-              sendEmergency(options[i]);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-

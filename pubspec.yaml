@@ -1,34 +1,30 @@
-name: alerting
-description: Trackify Passenger Safety App
-publish_to: "none"
+name: trackify_bus_dashboard
+description: A smart bus monitoring dashboard for drivers.
+publish_to: 'none' 
 
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-
-  cupertino_icons: ^1.0.6
-
-  # Upload photo from gallery
-  image_picker: ^1.1.2
-
-  # Send SMS / open phone dialer
-  url_launcher: ^6.3.0
-
-  # Get GPS location
-  geolocator: ^11.0.0
-
+  
+  # Map rendering and location handling
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.1
+  
+  # For triggering the phone dialer and opening URLs
+  url_launcher: ^6.3.1
+  
+  # For fetching external sensor data
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  flutter_lints: ^4.0.0
-
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
