@@ -1,0 +1,34 @@
+name: alerting
+description: Trackify Passenger Safety App
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+
+  # Upload photo from gallery
+  image_picker: ^1.1.2
+
+  # Send SMS / open phone dialer
+  url_launcher: ^6.3.0
+
+  # Get GPS location
+  geolocator: ^11.0.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+
+flutter:
+  uses-material-design: true
