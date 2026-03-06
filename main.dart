@@ -32,7 +32,7 @@ String phone = "";
 
 File? photo;
 
-List<String> alertNumbers = ["9976787741"];
+List<String> alertNumbers = ["100","1515"]
 
 String tr(String en, String ta) {
   return language == "ta" ? ta : en;
@@ -446,3 +446,4 @@ class SentinelScreen extends StatelessWidget {
     );
   }
 }
+
